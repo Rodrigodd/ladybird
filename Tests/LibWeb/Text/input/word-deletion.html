@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="include.js"></script>
+<input id="input" value="foo bar baz" />
+<div id="editable" contenteditable="true">foo bar baz</div>
+<script>
+    test(() => {
+        const input = document.getElementById("input");
+        println(`--- Input Control ---`);
+        println(`Initial: "${input.value}"`);
+
+        // Ctrl+Backspace at the end
+        input.setSelectionRange(11, 11);
+        internals.sendKey(input, "Backspace", 2); // 2 = Mod_Ctrl
+        println(`After Ctrl+Backspace: "${input.value}"`);
+
+        // Ctrl+Delete at the start
+        input.value = "foo bar baz";
+        input.setSelectionRange(0, 0);
+        internals.sendKey(input, "Delete", 2);
+        println(`After Ctrl+Delete: "${input.value}"`);
+
+        // Ctrl+Backspace from the middle of a word (between 'a' and 'r' in "bar")
+        input.value = "foo bar baz";
+        input.setSelectionRange(6, 6);
+        internals.sendKey(input, "Backspace", 2);
+        println(`After Ctrl+Backspace in middle: "${input.value}"`);
+
+        // Ctrl+Delete from the middle of a word (between 'b' and 'a' in "bar")
+        input.value = "foo bar baz";
+        input.setSelectionRange(5, 5);
+        internals.sendKey(input, "Delete", 2);
+        println(`After Ctrl+Delete in middle: "${input.value}"`);
+
+        // Ctrl+Backspace with pre-existing selection ("bar")
+        input.value = "foo bar baz";
+        input.setSelectionRange(4, 7);
+        internals.sendKey(input, "Backspace", 2);
+        println(`After Ctrl+Backspace with selection: "${input.value}"`);
+
+        // Ctrl+Delete with pre-existing selection ("bar")
+        input.value = "foo bar baz";
+        input.setSelectionRange(4, 7);
+        internals.sendKey(input, "Delete", 2);
+        println(`After Ctrl+Delete with selection: "${input.value}"`);
+
+        const editable = document.getElementById("editable");
+        println(`--- ContentEditable ---`);
+        println(`Initial: "${editable.innerText}"`);
+
+        // Ctrl+Backspace at the end
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.setStart(editable.firstChild, 11);
+        range.setEnd(editable.firstChild, 11);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        internals.sendKey(editable, "Backspace", 2);
+        println(`After Ctrl+Backspace: "${editable.innerText}"`);
+
+        // Ctrl+Delete at the start
+        editable.innerText = "foo bar baz";
+        range.setStart(editable.firstChild, 0);
+        range.setEnd(editable.firstChild, 0);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        internals.sendKey(editable, "Delete", 2);
+        println(`After Ctrl+Delete: "${editable.innerText}"`);
+
+        // Ctrl+Backspace in the middle (between 'a' and 'r' in "bar")
+        editable.innerText = "foo bar baz";
+        range.setStart(editable.firstChild, 6);
+        range.setEnd(editable.firstChild, 6);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        internals.sendKey(editable, "Backspace", 2);
+        println(`After Ctrl+Backspace in middle: "${editable.innerText}"`);
+
+        // Ctrl+Delete in the middle (between 'b' and 'a' in "bar")
+        editable.innerText = "foo bar baz";
+        range.setStart(editable.firstChild, 5);
+        range.setEnd(editable.firstChild, 5);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        internals.sendKey(editable, "Delete", 2);
+        println(`After Ctrl+Delete in middle: "${editable.innerText}"`);
+
+        // Ctrl+Backspace with selection ("bar")
+        editable.innerText = "foo bar baz";
+        range.setStart(editable.firstChild, 4);
+        range.setEnd(editable.firstChild, 7);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        internals.sendKey(editable, "Backspace", 2);
+        println(`After Ctrl+Backspace with selection: "${editable.innerText}"`);
+
+        // Ctrl+Delete with selection ("bar")
+        editable.innerText = "foo bar baz";
+        range.setStart(editable.firstChild, 4);
+        range.setEnd(editable.firstChild, 7);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        internals.sendKey(editable, "Delete", 2);
+        println(`After Ctrl+Delete with selection: "${editable.innerText}"`);
+    });
+</script>

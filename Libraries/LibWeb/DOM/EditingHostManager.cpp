@@ -220,6 +220,14 @@ void EditingHostManager::decrement_cursor_position_to_previous_line(CollapseSele
 
 void EditingHostManager::handle_delete(Utf16FlyString const& input_type, [[maybe_unused]] DispatchInputEvent dispatch_input_event)
 {
+    if (auto selection = m_document->get_selection(); selection && selection->is_collapsed()) {
+        if (input_type == UIEvents::InputTypes::deleteWordBackward) {
+            selection->move_offset_to_previous_word(false);
+        } else if (input_type == UIEvents::InputTypes::deleteWordForward) {
+            selection->move_offset_to_next_word(false);
+        }
+    }
+
     // https://w3c.github.io/editing/docs/execCommand/#additional-requirements
     // When the user instructs the user agent to delete the previous character inside an editing host, such as by
     // pressing the Backspace key while the cursor is in an editable node, the user agent must call
@@ -230,7 +238,9 @@ void EditingHostManager::handle_delete(Utf16FlyString const& input_type, [[maybe
     //
     // NB: A cut deletes the selection like Backspace does, and passes its input type along so the input event fires
     //     with inputType "deleteByCut" and the cut forms its own undo unit.
-    auto command = input_type == UIEvents::InputTypes::deleteContentForward ? Editing::CommandNames::forwardDelete : Editing::CommandNames::delete_;
+    auto command = (input_type == UIEvents::InputTypes::deleteContentForward || input_type == UIEvents::InputTypes::deleteWordForward)
+        ? Editing::CommandNames::forwardDelete
+        : Editing::CommandNames::delete_;
     auto editing_result = m_document->exec_command_internal(command, false, {}, Document::DispatchInputEvent::Yes, input_type);
     if (editing_result.is_exception())
         dbgln("handle_delete(): editing resulted in exception: {}", editing_result.exception());

@@ -1292,12 +1292,12 @@ static bool should_ignore_keydown_event(u32 code_point, u32 modifiers, bool shou
     return false;
 }
 
-static Optional<Utf16FlyString> input_type_for_delete_key(UIEvents::KeyCode key)
+static Optional<Utf16FlyString> input_type_for_delete_key(UIEvents::KeyCode key, u32 modifiers)
 {
     if (key == UIEvents::KeyCode::Key_Backspace)
-        return UIEvents::InputTypes::deleteContentBackward;
+        return (modifiers & UIEvents::Mod_PlatformWordJump) != 0 ? UIEvents::InputTypes::deleteWordBackward : UIEvents::InputTypes::deleteContentBackward;
     if (key == UIEvents::KeyCode::Key_Delete)
-        return UIEvents::InputTypes::deleteContentForward;
+        return (modifiers & UIEvents::Mod_PlatformWordJump) != 0 ? UIEvents::InputTypes::deleteWordForward : UIEvents::InputTypes::deleteContentForward;
     return {};
 }
 
@@ -1392,7 +1392,7 @@ EventResult EventHandler::handle_keydown(UIEvents::KeyCode key, u32 modifiers, u
         return cancel_drag_and_drop_event(m_last_known_mouse_visual_viewport_position.value_or({}), m_last_known_mouse_screen_position, UIEvents::MouseButton::Primary, m_last_known_mouse_buttons, modifiers);
 
     auto handle_delete_key = [&](InputEventsTarget& target) -> Optional<EventResult> {
-        auto input_type = input_type_for_delete_key(key);
+        auto input_type = input_type_for_delete_key(key, modifiers);
         if (!input_type.has_value())
             return {};
 

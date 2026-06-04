@@ -1,0 +1,16 @@
+--- Input Control ---
+Initial: "foo bar baz"
+After Ctrl+Backspace: "foo bar "
+After Ctrl+Delete: " bar baz"
+After Ctrl+Backspace in middle: "foo r baz"
+After Ctrl+Delete in middle: "foo b baz"
+After Ctrl+Backspace with selection: "foo  baz"
+After Ctrl+Delete with selection: "foo  baz"
+--- ContentEditable ---
+Initial: "foo bar baz"
+After Ctrl+Backspace: "foo bar "
+After Ctrl+Delete: " bar baz"
+After Ctrl+Backspace in middle: "foo r baz"
+After Ctrl+Delete in middle: "foo b baz"
+After Ctrl+Backspace with selection: "foo  baz"
+After Ctrl+Delete with selection: "foo  baz"
