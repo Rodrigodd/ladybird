@@ -285,4 +285,34 @@ Unicode::Segmenter& CharacterData::word_segmenter() const
     return *segmenter;
 }
 
+size_t CharacterData::find_next_word_boundary(size_t offset) const
+{
+    size_t current_offset = offset;
+    while (true) {
+        if (auto next_offset = word_segmenter().next_boundary(current_offset); next_offset.has_value()) {
+            auto word = m_data.substring_view(current_offset, *next_offset - current_offset);
+            current_offset = *next_offset;
+            if (Unicode::Segmenter::should_continue_beyond_word(word))
+                continue;
+        }
+        break;
+    }
+    return current_offset;
+}
+
+size_t CharacterData::find_previous_word_boundary(size_t offset) const
+{
+    size_t current_offset = offset;
+    while (true) {
+        if (auto prev_offset = word_segmenter().previous_boundary(current_offset); prev_offset.has_value()) {
+            auto word = m_data.substring_view(*prev_offset, current_offset - *prev_offset);
+            current_offset = *prev_offset;
+            if (Unicode::Segmenter::should_continue_beyond_word(word))
+                continue;
+        }
+        break;
+    }
+    return current_offset;
+}
+
 }

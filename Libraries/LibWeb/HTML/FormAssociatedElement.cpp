@@ -1330,25 +1330,9 @@ void FormAssociatedTextControlElement::handle_delete(Utf16FlyString const& input
             if (auto offset = text_node->grapheme_segmenter().next_boundary(m_selection_end); offset.has_value())
                 selection_end = *offset;
         } else if (input_type == UIEvents::InputTypes::deleteWordBackward) {
-            while (true) {
-                if (auto offset = text_node->word_segmenter().previous_boundary(selection_start); offset.has_value()) {
-                    auto word = text_node->data().substring_view(*offset, selection_start - *offset);
-                    selection_start = *offset;
-                    if (Unicode::Segmenter::should_continue_beyond_word(word))
-                        continue;
-                }
-                break;
-            }
+            selection_start = text_node->find_previous_word_boundary(selection_start);
         } else if (input_type == UIEvents::InputTypes::deleteWordForward) {
-            while (true) {
-                if (auto offset = text_node->word_segmenter().next_boundary(selection_end); offset.has_value()) {
-                    auto word = text_node->data().substring_view(selection_end, *offset - selection_end);
-                    selection_end = *offset;
-                    if (Unicode::Segmenter::should_continue_beyond_word(word))
-                        continue;
-                }
-                break;
-            }
+            selection_end = text_node->find_next_word_boundary(selection_end);
         }
     }
 
@@ -1357,9 +1341,9 @@ void FormAssociatedTextControlElement::handle_delete(Utf16FlyString const& input
     // host path.
     auto& html_element = text_control_to_html_element();
     auto category = Editing::UndoStep::Category::Other;
-    if (input_type == UIEvents::InputTypes::deleteContentBackward)
+    if (input_type == UIEvents::InputTypes::deleteContentBackward || input_type == UIEvents::InputTypes::deleteWordBackward)
         category = Editing::UndoStep::Category::BackwardDeletion;
-    else if (input_type == UIEvents::InputTypes::deleteContentForward)
+    else if (input_type == UIEvents::InputTypes::deleteContentForward || input_type == UIEvents::InputTypes::deleteWordForward)
         category = Editing::UndoStep::Category::ForwardDeletion;
     auto history = html_element.document().editing_history();
     history->begin_recording(html_element, category);
@@ -1574,15 +1558,8 @@ void FormAssociatedTextControlElement::increment_cursor_position_to_next_word(Co
     if (!text_node)
         return;
 
-    while (true) {
-        if (auto offset = text_node->word_segmenter().next_boundary(m_selection_end); offset.has_value()) {
-            auto word = text_node->data().substring_view(m_selection_end, *offset - m_selection_end);
-            move_selection_end_to(*offset, TextAffinity::Downstream, collapse);
-            if (Unicode::Segmenter::should_continue_beyond_word(word))
-                continue;
-        }
-        break;
-    }
+    auto offset = text_node->find_next_word_boundary(m_selection_end);
+    move_selection_end_to(offset, TextAffinity::Downstream, collapse);
 
     selection_was_changed(SelectionSource::UI);
 }
@@ -1593,15 +1570,8 @@ void FormAssociatedTextControlElement::decrement_cursor_position_to_previous_wor
     if (!text_node)
         return;
 
-    while (true) {
-        if (auto offset = text_node->word_segmenter().previous_boundary(m_selection_end); offset.has_value()) {
-            auto word = text_node->data().substring_view(*offset, m_selection_end - *offset);
-            move_selection_end_to(*offset, TextAffinity::Downstream, collapse);
-            if (Unicode::Segmenter::should_continue_beyond_word(word))
-                continue;
-        }
-        break;
-    }
+    auto offset = text_node->find_previous_word_boundary(m_selection_end);
+    move_selection_end_to(offset, TextAffinity::Downstream, collapse);
 
     selection_was_changed(SelectionSource::UI);
 }

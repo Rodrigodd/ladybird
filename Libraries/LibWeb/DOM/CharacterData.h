@@ -42,6 +42,9 @@ public:
     Unicode::Segmenter& line_segmenter() const;
     Unicode::Segmenter& word_segmenter() const;
 
+    size_t find_next_word_boundary(size_t offset) const;
+    size_t find_previous_word_boundary(size_t offset) const;
+
 protected:
     struct RareData : Node::RareData {
         AK_ALLOC_WITH_KMALLOC;
